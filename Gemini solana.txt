@@ -1,0 +1,60 @@
+// types.ts
+import { PublicKey } from '@solana/web3.js';
+
+export interface INftInfo {
+    mint: string; // PublicKey as string
+    is_cnft: boolean;
+    status: 'pending_delegation' | 'delegated' | 'processing_transfer' | 'in_escrow' | 'failed' | 'transfer_complete';
+    retry_count: number;
+    last_error: string | null;
+    transfer_tx: string | null;
+    // Campos específicos de cNFT podem ser necessários aqui se não obtidos via DAS em tempo real
+    asset_id?: string; // Para cNFTs, pode ser o mesmo que mint, mas útil ter explícito
+    // leaf_id?: Buffer; // Se precisar armazenar
+}
+
+export interface IBatch {
+    id: string;
+    owner: string; // Wallet PublicKey as string
+    nfts: INftInfo[];
+    status: 'pending_delegation' | 'delegated' | 'processing' | 'completed' | 'completed_with_errors' | 'failed' | 'timeout';
+    delegation_signature?: string; // A assinatura da(s) transação(ões) de delegação
+    created_at: number; // Timestamp
+}
+
+// Interface para a resposta da DAS API getAssetProof
+export interface IAssetProof {
+    root: PublicKey;
+    proof: PublicKey[]; // Array de nós da proof Merkle
+    node_index: number;
+    leaf: PublicKey;
+    tree_id: PublicKey; // ID da Merkle Tree onde o asset está
+    // Inclua outros campos retornados pela sua DAS API específica, se necessário
+    // Ex: seq, data_hash, creator_hash, nonce, index (índice da folha)
+    seq?: number;
+    data_hash?: Buffer;
+    creator_hash?: Buffer;
+    nonce?: number;
+    index?: number;
+}
+
+// Interface para a resposta da DAS API getAsset (simplificada)
+export interface IAsset {
+    id: PublicKey;
+    owner: PublicKey;
+    delegate?: PublicKey;
+    frozen: boolean;
+    compressed: boolean;
+    compression: {
+        eligible: boolean;
+        compressed: boolean;
+        data_hash: string;
+        creator_hash: string;
+        asset_hash: string;
+        tree: string; // Tree ID as string
+        seq: number;
+        leaf_id: number; // ou node_index? Verificar API specifica
+    };
+    // ... outros campos como metadados, etc.
+}
+
